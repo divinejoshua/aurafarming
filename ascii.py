@@ -5,15 +5,13 @@ import time
 import sys
 import os
 
-# === CONFIG ===
 VIDEO_PATH = "1751520327557.mp4"
 WIDTH = 48
 HEIGHT = 42
 FPS = 10
 MAX_DURATION = 12
 
-# Visual-based mapping, bukan dari terang ke gelap
-ASCII_CHARS = " `'.,-~:;+=*!#%@█"  # disusun manual: dari kosong → tajam
+ASCII_CHARS = " `'.,-~:;+=*!#%@█"  
 
 def auto_contrast(img):
     hist = img.histogram()
@@ -25,8 +23,6 @@ def auto_contrast(img):
 
 def frame_to_ascii(frame):
     img = Image.fromarray(frame).convert("L")
-
-    # Tingkatkan ketajaman garis
     img = auto_contrast(img)
     img = ImageEnhance.Contrast(img).enhance(2.6)
     img = ImageEnhance.Brightness(img).enhance(1.15)
@@ -37,16 +33,15 @@ def frame_to_ascii(frame):
     img = img.resize((WIDTH, HEIGHT))
     pixels = np.array(img)
 
-    # Map pixel → character (pakai density visual, bukan brightness biasa)
     ascii_img = []
     for row in pixels:
         line = ''.join(
             ASCII_CHARS[int(p / 256 * len(ASCII_CHARS))] * 2 for p in row
         )
-        ascii_img.append(" " + line)  # padding samping
+        ascii_img.append(" " + line)  
     return '\n'.join(ascii_img)
 
-# === LOAD VIDEO & FRAME EXTRACTION ===
+
 cap = cv2.VideoCapture(VIDEO_PATH)
 video_fps = cap.get(cv2.CAP_PROP_FPS) or 25
 interval = max(1, int(video_fps // FPS))
@@ -67,7 +62,6 @@ while cap.isOpened() and len(ascii_frames) < max_frames:
     count += 1
 cap.release()
 
-# === PLAYBACK ===
 os.system('cls' if os.name == 'nt' else 'clear')
 delay = 1 / FPS
 
